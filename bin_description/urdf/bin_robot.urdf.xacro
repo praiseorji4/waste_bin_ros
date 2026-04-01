@@ -14,6 +14,10 @@
 
     <xacro:include filename="$(find bin_description)/urdf/body/bin_base.urdf.xacro"/>
     <xacro:include filename="$(find bin_description)/urdf/body/bin_wheels.urdf.xacro"/>
+    <xacro:include filename="$(find bin_description)/urdf/body/bin_top.urdf.xacro"/>
+    <xacro:include filename="$(find bin_description)/urdf/body/bin_cover.urdf.xacro"/>
+
+
 
     <!-- <xacro:include filename="$(find bin_description)/urdf/sensors/lidar.urdf.xacro"/>
     <xacro:include filename="$(find bin_description)/urdf/body/bin_wheel.urdf.xacro"/>
@@ -36,6 +40,13 @@
       prefix="$(arg prefix)"/> 
 
     <xacro:bin_wheels
+      prefix="$(arg prefix)" />
+
+    <xacro:bin_top
+      prefix="$(arg prefix)"
+      height="${base_height - wheel_radius}" />
+
+    <xacro:bin_cover
       prefix="$(arg prefix)" />
     <!-- <xacro:back_bin_stud
       prefix="$(arg prefix)"
