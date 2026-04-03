@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+    <xacro:macro name="bin_ros2_control" params="prefix use_gazebo">
+        <ros2_control name="UbotSystem" type="system">
+            <hardware>
+                <xacro:if value="${use_gazebo}">
+                    <plugin>gz_ros2_control/GazeboSimSystem</plugin>
+                </xacro:if>
+                <xacro:unless value="${use_gazebo}">
+                    <plugin>ubot_control/UbotHardwareInterface</plugin>
+                </xacro:unless>
+            </hardware>
+
+            <xacro:macro name="wheel_interfaces" params="name">
+                <joint name="${name}">
+                    <command_interface name="velocity">
+                        <param name="min">-10.0</param>
+                        <param name="max">10.0</param>
+                    </command_interface>
+                    <state_interface name="position"/>
+                    <state_interface name="velocity"/>
+                </joint>
+            </xacro:macro>
+
+            <xacro:wheel_interfaces name="${prefix}base_right_wheel_joint"/>
+            <xacro:wheel_interfaces name="${prefix}base_left_wheel_joint"/>
+
+            <joint name="${prefix}bin_cover_joint">
+                <command_interface name="position">
+                    <param name="min">${-pi/2}</param>
+                    <param name="max">0</param>
+                </command_interface>
+                <state_interface name="position"/>
+                <state_interface name="velocity"/>
+            </joint>
+        </ros2_control>
+    </xacro:macro>
+</robot>

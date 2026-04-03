@@ -22,9 +22,9 @@
             </visual>
             <collision>
                 <geometry>
-                    <box size="${cover_length} ${cover_width} ${cover_height}"/>
+                    <mesh filename="package://bin_description/meshes/Cover.stl" scale="1 1 1"/>
                 </geometry>
-                <origin xyz="0 0 0" rpy="0 0 0"/>
+                <origin xyz="${cover_length/2} 0 ${-bin_height}" rpy="0 0 0"/>
             </collision>
             <inertial>
                 <origin xyz="0 0 0" rpy="0 0 0"/>

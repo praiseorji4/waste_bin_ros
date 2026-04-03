@@ -22,7 +22,7 @@
             </visual>
             <collision>
                 <geometry>
-                    <box size="0.036 0.036 0.0768"/>
+                    <mesh filename="package://bin_description/meshes/Bin.stl" scale="1 1 1"/>
                 </geometry>
                 <origin xyz="0 0 0" rpy="0 0 0"/>
             </collision>

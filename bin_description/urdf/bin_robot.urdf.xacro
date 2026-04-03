@@ -16,6 +16,12 @@
     <xacro:include filename="$(find bin_description)/urdf/body/bin_wheels.urdf.xacro"/>
     <xacro:include filename="$(find bin_description)/urdf/body/bin_top.urdf.xacro"/>
     <xacro:include filename="$(find bin_description)/urdf/body/bin_cover.urdf.xacro"/>
+    <xacro:include filename="$(find bin_description)/urdf/sensors/bin_camera.urdf.xacro"/>
+    <xacro:include filename="$(find bin_description)/urdf/sensors/bin_lidar.urdf.xacro"/>
+
+
+    <xacro:include filename="$(find bin_description)/urdf/ros2_control/bin_ros2_control.xacro"/>
+    <xacro:include filename="$(find bin_description)/urdf/gazebo/bin_gazebo.urdf.xacro"/>
 
 
 
@@ -29,6 +35,11 @@
     <!-- <xacro:include filename="$(find bin_description)/urdf/sensors/rgbd_camera.urdf.xacro"/>
    
     <xacro:include filename="$(find bin_description)/urdf/sensors/imu.urdf.xacro"/> -->
+
+
+    <xacro:bin_ros2_control prefix="$(arg prefix)" use_gazebo="$(arg use_gazebo)" />
+    <xacro:bin_gazebo prefix="$(arg prefix)" />
+
 
 
     <xacro:bin_base 
@@ -47,6 +58,12 @@
       height="${base_height - wheel_radius}" />
 
     <xacro:bin_cover
+      prefix="$(arg prefix)" />
+
+    <xacro:bin_camera
+      prefix="$(arg prefix)" />
+
+    <xacro:bin_lidar
       prefix="$(arg prefix)" />
     <!-- <xacro:back_bin_stud
       prefix="$(arg prefix)"

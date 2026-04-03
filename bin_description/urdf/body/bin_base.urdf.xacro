@@ -24,7 +24,7 @@
         </visual>
         <collision>
             <geometry>
-                <box size="${base_length} ${base_width} ${base_height}"/>
+                <mesh filename="package://bin_description/meshes/Base.stl" scale="1 1 1"/>
             </geometry>
             <origin xyz="0 0 ${base_height - wheel_radius}" rpy="0 0 0"/>
         </collision>
@@ -43,7 +43,7 @@
   </joint>
 
 
-  <link name="bin_castor_link">
+  <link name="${prefix}bin_castor_link">
     <visual>
         <origin xyz="0.08 0.0 0.0" rpy="0.0 0.0 0.0"/>
         <!-- <origin xyz="0.0 0.0 0.011" rpy="0.0 0.0 0.0"/> -->
@@ -69,10 +69,10 @@
     </inertial>
   </link>
 
-  <joint name="base_castor_joint" type="fixed">
+  <joint name="${prefix}base_castor_joint" type="fixed">
     <origin xyz="-0.08 0.0 0.0" rpy="0.0 0.0 0.0"/>
-    <parent link="base_link"/>
-    <child link="bin_castor_link"/>
+    <parent link="${prefix}base_link"/>
+    <child link="${prefix}bin_castor_link"/>
   </joint>
 </xacro:macro>
 </robot>
