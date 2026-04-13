@@ -1,10 +1,14 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
-    <xacro:property name="wheel_mass" value="0.1" />
+    <xacro:property name="rubber_density" value="1100.0" />
     <xacro:property name="wheel_width" value="0.0214" />
     <xacro:property name="wheel_radius" value="0.031755" />
+    <xacro:property name="wheel_mass" value="${rubber_density * pi * wheel_radius * wheel_radius * wheel_width}" />
 
-    <xacro:property name="motor_mass" value="0.333" />
+    <xacro:property name="motor_mass"  value="0.333" />
+    <xacro:property name="motor_box_x" value="0.06"  />
+    <xacro:property name="motor_box_y" value="0.05"  />
+    <xacro:property name="motor_box_z" value="0.05"  />
 
 
     
@@ -14,7 +18,8 @@
         <link name="${prefix}left_motor_link">
             <visual>
                 <geometry>
-                    <mesh filename="package://bin_description/meshes/Left Motor.stl" scale="1 1 1"/>
+                    <!-- <mesh filename="package://bin_description/meshes/Left Motor.stl" scale="1 1 1"/> -->
+                    <box size="${motor_box_x} ${motor_box_y} ${motor_box_z}"/>
                 </geometry>
                 <origin xyz="0 0.03 0" rpy="${pi/2} 0 ${-pi/2}"/>
                 <material name="black">
@@ -23,7 +28,8 @@
             </visual>
             <collision>
                 <geometry>
-                    <mesh filename="package://bin_description/meshes/Left Motor.stl" scale="1 1 1"/>
+                    <!-- <mesh filename="package://bin_description/meshes/Left Motor.stl" scale="1 1 1"/> -->
+                    <box size="${motor_box_x} ${motor_box_y} ${motor_box_z}"/>
                 </geometry>
                 <origin xyz="0 0.03 0" rpy="${pi/2} 0 ${-pi/2}"/>
             </collision>
@@ -31,9 +37,9 @@
                 <origin xyz="0 0 0" rpy="0 0 0"/>
                 <mass value="${motor_mass}"/>
                 <inertia
-                ixx="9.5017439e-5" ixy="0.0" ixz="0.0"
-                iyy="9.4629109e-5" iyz="-1.779997e-6"
-                izz="4.9374579e-5"/>
+                ixx="${(1/12) * motor_mass * (motor_box_y*motor_box_y + motor_box_z*motor_box_z)}"  ixy="0.0"  ixz="0.0"
+                iyy="${(1/12) * motor_mass * (motor_box_x*motor_box_x + motor_box_z*motor_box_z)}"  iyz="0.0"
+                izz="${(1/12) * motor_mass * (motor_box_x*motor_box_x + motor_box_y*motor_box_y)}"/>
             </inertial>
 
         </link>
@@ -46,7 +52,8 @@
         <link name="${prefix}right_motor_link">
             <visual>
                 <geometry>
-                    <mesh filename="package://bin_description/meshes/Left Motor.stl" scale="1 1 1"/>
+                    <!-- <mesh filename="package://bin_description/meshes/Left Motor.stl" scale="1 1 1"/> -->
+                    <box size="${motor_box_x} ${motor_box_y} ${motor_box_z}"/>
                 </geometry>
                 <origin xyz="0 -0.03 0" rpy="${pi/2} 0 ${pi/2}"/>
                 <material name="black">
@@ -55,7 +62,8 @@
             </visual>
             <collision>
                 <geometry>
-                    <mesh filename="package://bin_description/meshes/Left Motor.stl" scale="1 1 1"/>
+                    <!-- <mesh filename="package://bin_description/meshes/Left Motor.stl" scale="1 1 1"/> -->
+                    <box size="${motor_box_x} ${motor_box_y} ${motor_box_z}"/>
                 </geometry>
                 <origin xyz="0 -0.03 0" rpy="${pi/2} 0 ${pi/2}"/>
             </collision>
@@ -63,11 +71,11 @@
                 <origin xyz="0 0 0" rpy="0 0 0"/>
                 <mass value="${motor_mass}"/>
                 <inertia
-                ixx="9.5017439e-5" ixy="0.0" ixz="0.0"
-                iyy="9.4629109e-5" iyz="-1.779997e-6"
-                izz="4.9374579e-5"/>
+                ixx="${(1/12) * motor_mass * (motor_box_y*motor_box_y + motor_box_z*motor_box_z)}"  ixy="0.0"  ixz="0.0"
+                iyy="${(1/12) * motor_mass * (motor_box_x*motor_box_x + motor_box_z*motor_box_z)}"  iyz="0.0"
+                izz="${(1/12) * motor_mass * (motor_box_x*motor_box_x + motor_box_y*motor_box_y)}"/>
             </inertial>
-            
+
         </link>
         <joint name="${prefix}base_right_motor_joint" type="fixed">
             <parent link="${prefix}base_link"/>
@@ -81,18 +89,20 @@
         <link name="${prefix}left_wheel_link">
             <visual>
                 <geometry>
-                    <mesh filename="package://bin_description/meshes/Left Wheel.stl" scale="1 1 1"/>
+                    <!-- <mesh filename="package://bin_description/meshes/Left Wheel.stl" scale="1 1 1"/> -->
+                    <cylinder radius="${wheel_radius}" length="${wheel_width}"/>
                 </geometry>
-                <origin xyz="0 0 0" rpy="0 0 ${pi}"/>
+                <origin xyz="0 0 0" rpy="${pi/2} 0 0"/>
                 <material name="black">
                     <color rgba="0 0 0 1"/>
                 </material>
             </visual>
             <collision>
                 <geometry>
-                    <mesh filename="package://bin_description/meshes/Left Wheel.stl" scale="1 1 1"/>
+                    <!-- <mesh filename="package://bin_description/meshes/Left Wheel.stl" scale="1 1 1"/> -->
+                    <cylinder radius="${wheel_radius}" length="${wheel_width}"/>
                 </geometry>
-                <origin xyz="0 0 0" rpy="0 0 ${pi}"/>
+                <origin xyz="0 0 0" rpy="${pi/2} 0 0"/>
             </collision>
             <inertial>
                 <origin xyz="0 0 0" rpy="0 0 0"/>
@@ -105,27 +115,29 @@
 
         </link>
         <joint name="${prefix}base_left_wheel_joint" type="continuous">
-            <parent link="${prefix}left_motor_link"/>
+            <parent link="${prefix}base_link"/>
             <child link="${prefix}left_wheel_link"/>
-            <origin xyz="0 0.038 0" rpy="0 0 0"/>
+            <origin xyz="${base_length/4} ${base_width/2 + wheel_width/2} 0" rpy="0 0 0"/>
             <axis xyz="0.0 1.0 0.0"/>
         </joint>
 
         <link name="${prefix}right_wheel_link">
             <visual>
                 <geometry>
-                    <mesh filename="package://bin_description/meshes/Right Wheel.stl" scale="1 1 1"/>
+                    <!-- <mesh filename="package://bin_description/meshes/Right Wheel.stl" scale="1 1 1"/> -->
+                    <cylinder radius="${wheel_radius}" length="${wheel_width}"/>
                 </geometry>
-                <origin xyz="0 0 0" rpy="0 0 0"/>
+                <origin xyz="0 0 0" rpy="${pi/2} 0 0"/>
                 <material name="black">
                     <color rgba="0 0 0 1"/>
                 </material>
             </visual>
             <collision>
                 <geometry>
-                    <mesh filename="package://bin_description/meshes/Right Wheel.stl" scale="1 1 1"/>
+                    <!-- <mesh filename="package://bin_description/meshes/Right Wheel.stl" scale="1 1 1"/> -->
+                    <cylinder radius="${wheel_radius}" length="${wheel_width}"/>
                 </geometry>
-                <origin xyz="0 0 0" rpy="0 0 0"/>
+                <origin xyz="0 0 0" rpy="${pi/2} 0 0"/>
             </collision>
             <inertial>
                 <origin xyz="0 0 0" rpy="0 0 0"/>
@@ -138,12 +150,11 @@
 
         </link>
         <joint name="${prefix}base_right_wheel_joint" type="continuous">
-            <parent link="${prefix}right_motor_link"/>
+            <parent link="${prefix}base_link"/>
             <child link="${prefix}right_wheel_link"/>
-            <origin xyz="0 -0.038 0" rpy="0 0 0"/>
+            <origin xyz="${base_length/4} ${-(base_width/2 + wheel_width/2)} 0" rpy="0 0 0"/>
             <axis xyz="0.0 1.0 0.0"/>
         </joint>
-
         
     </xacro:macro>
 

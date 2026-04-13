@@ -42,29 +42,31 @@
 
 
 
-    <xacro:bin_base 
+    <xacro:bin_base
     prefix="$(arg prefix)"
-    z_off="${wheel_radius}"/>  <!--Wheel Radius-->
+    z_off="${wheel_radius}"/>  <!--wheel_radius + motor z-offset (0.01) to land wheels on ground-->
 
-
-    <xacro:bin_motors 
-      prefix="$(arg prefix)"/> 
 
     <xacro:bin_wheels
-      prefix="$(arg prefix)" />
+      prefix="$(arg prefix)"/>
 
     <xacro:bin_top
       prefix="$(arg prefix)"
-      height="${base_height - wheel_radius}" />
+      height="${base_height}" />
 
     <xacro:bin_cover
+      prefix="$(arg prefix)" />
+
+    <xacro:bin_lidar
       prefix="$(arg prefix)" />
 
     <xacro:bin_camera
       prefix="$(arg prefix)" />
 
-    <xacro:bin_lidar
-      prefix="$(arg prefix)" />
+    <!-- <xacro:bin_motors 
+      prefix="$(arg prefix)"/> 
+
+ -->
     <!-- <xacro:back_bin_stud
       prefix="$(arg prefix)"
       side="back_left"

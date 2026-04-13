@@ -10,7 +10,7 @@ controller_manager:
       type: joint_state_broadcaster/JointStateBroadcaster
 
     bin_cover_controller:
-      type: position_controllers/JointPositionController
+      type: position_controllers/JointGroupPositionController
 
 diff_drive_controller:
   ros__parameters:
@@ -19,7 +19,7 @@ diff_drive_controller:
     right_wheel_names: ["base_right_wheel_joint"]
 
     # Geometric parameters (based on your URDF properties)
-    wheel_separation: 0.2261 # 2 * wheel_yoff (0.113052) (check out 0.2525 too)
+    wheel_separation: 0.2484  # base_width (0.227) + wheel_width (0.0214)
     wheel_radius: 0.031755    # wheel_radius
 
     # Odometry settings
@@ -42,4 +42,5 @@ diff_drive_controller:
 
 bin_cover_controller:
   ros__parameters:
-    joint: bin_cover_joint
+    joints: 
+      - bin_cover_joint

@@ -37,7 +37,7 @@ def generate_launch_description():
     world_file = os.path.join(
         get_package_share_directory('bin_bringup'),
         'worlds',
-        'basic.sdf'
+        'warehouse_world.sdf'
     )
 
     # 2. Modify the gazebo launch description
@@ -85,8 +85,8 @@ def generate_launch_description():
         output='screen',
         arguments=[
             '-topic', 'robot_description', 
-            '-name', 'bin',
-            '-world', 'sensors', 
+            '-name', 'bin_bot',
+            # '-world', 'sensors', 
             '-z', '0.1'
         ],
     )
@@ -152,7 +152,7 @@ def generate_launch_description():
     slam_params_file = os.path.join(bin_bringup_dir, 'config', 'mapper_params_online_async.yaml')
     
     # Path to RViz configuration
-    rviz_config_file = os.path.join(bin_description_dir, 'rviz', 'display.rviz')
+    rviz_config_file = os.path.join(bin_description_dir, 'rviz', 'slam.rviz')
 
     # 7. Include SLAM Toolbox
     slam_toolbox = IncludeLaunchDescription(
@@ -204,5 +204,5 @@ def generate_launch_description():
         ),
         slam_toolbox,
         rviz_node, 
-        # nav2
+        nav2
     ])

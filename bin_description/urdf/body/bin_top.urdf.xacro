@@ -1,9 +1,13 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+    <xacro:property name="plastic_density"    value="1050.0" />
+    <xacro:property name="bin_wall_thickness" value="0.004"  />
+    <xacro:property name="bin_length" value="0.20" />
+    <xacro:property name="bin_width" value="0.20" />
+    <xacro:property name="bin_height" value="0.24" />
+    <!-- <xacro:property name="bin_mass" value="${plastic_density * bin_wall_thickness * (bin_length*bin_width + 2*bin_width*bin_height + 2*bin_length*bin_height)}" /> -->
+
     <xacro:property name="bin_mass" value="0.1" />
-    <xacro:property name="bin_length" value="0.270" />
-    <xacro:property name="bin_width" value="0.270" />
-    <xacro:property name="bin_height" value="0.3048" />
 
 
     
@@ -13,18 +17,20 @@
         <link name="${prefix}bin_top_link">
             <visual>
                 <geometry>
-                    <mesh filename="package://bin_description/meshes/Bin.stl" scale="1 1 1"/>
+                    <!-- <mesh filename="package://bin_description/meshes/Bin.stl" scale="1 1 1"/> -->
+                    <box size="${bin_length} ${bin_width} ${bin_height}"/>
                 </geometry>
-                <origin xyz="0 0 0" rpy="0 0 0"/>
+                <origin xyz="0 0 ${bin_height/2}" rpy="0 0 0"/>
                 <material name="white">
                     <color rgba="1 1 1 1"/>
                 </material>
             </visual>
             <collision>
                 <geometry>
-                    <mesh filename="package://bin_description/meshes/Bin.stl" scale="1 1 1"/>
+                    <!-- <mesh filename="package://bin_description/meshes/Bin.stl" scale="1 1 1"/> -->
+                    <box size="${bin_length} ${bin_width} ${bin_height}"/>
                 </geometry>
-                <origin xyz="0 0 0" rpy="0 0 0"/>
+                <origin xyz="0 0 ${bin_height/2}" rpy="0 0 0"/>
             </collision>
             <inertial>
                 <origin xyz="0 0 0" rpy="0 0 0"/>

@@ -1,8 +1,9 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
-    <xacro:property name="lidar_mass" value="0.095" />
+    <xacro:property name="plastic_density" value="1050.0" />
     <xacro:property name="lidar_radius" value="0.0175" />
     <xacro:property name="lidar_height" value="0.042" />
+    <xacro:property name="lidar_mass" value="${plastic_density * pi * lidar_radius * lidar_radius * lidar_height}" />
 
     <xacro:macro name="bin_lidar" params="prefix">
 
@@ -37,7 +38,7 @@
             <parent link="${prefix}bin_cover_link"/>
             <child link="${prefix}lidar_link"/>
             <!-- Centred on top face of the cover panel -->
-            <origin xyz="${cover_length/2} 0 ${cover_height / 2 + lidar_height / 2}" rpy="0 0 0"/>
+            <origin xyz="0 0 ${lidar_height/2}" rpy="0 0 0"/>
         </joint>
 
     </xacro:macro>
