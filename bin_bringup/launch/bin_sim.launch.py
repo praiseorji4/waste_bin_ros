@@ -184,11 +184,27 @@ def generate_launch_description():
         PythonLaunchDescriptionSource(os.path.join(nav2_launch_dir, 'navigation_launch.py')),
         launch_arguments={
             'use_sim_time': 'true',
-            'params_file': nav2_params_path 
+            'params_file': nav2_params_path
         }.items(),
- 
+
     )
-    
+
+    color_detector_node = Node(
+        package='bin_behavior',
+        executable='color_detector',
+        name='color_detector',
+        output='screen',
+        parameters=[{'use_sim_time': True}]
+    )
+
+    behavior_manager_node = Node(
+        package='bin_behavior',
+        executable='behavior_manager',
+        name='behavior_manager',
+        output='screen',
+        parameters=[{'use_sim_time': True}]
+    )
+
     return LaunchDescription([
         SetEnvironmentVariable('GZ_SIM_RESOURCE_PATH', gz_resource_path),
         node_robot_state_publisher,
@@ -203,6 +219,8 @@ def generate_launch_description():
             )
         ),
         slam_toolbox,
-        rviz_node, 
-        nav2
+        rviz_node,
+        nav2,
+        color_detector_node,
+        behavior_manager_node,
     ])
