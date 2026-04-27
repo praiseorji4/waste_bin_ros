@@ -37,7 +37,8 @@ def generate_launch_description():
     world_file = os.path.join(
         get_package_share_directory('bin_bringup'),
         'worlds',
-        'warehouse_world.sdf'
+        'basic.sdf'
+        # 'warehouse_world.sdf'
     )
 
     # 2. Modify the gazebo launch description
@@ -86,7 +87,7 @@ def generate_launch_description():
         arguments=[
             '-topic', 'robot_description', 
             '-name', 'bin_bot',
-            # '-world', 'sensors', 
+            '-world', 'sensors', 
             '-z', '0.1'
         ],
     )
@@ -174,6 +175,20 @@ def generate_launch_description():
         parameters=[{'use_sim_time': True}]
     )
 
+
+    ekf_config_path = os.path.join(
+        get_package_share_directory('bin_bringup'),
+        'config', 'ekf.yaml'
+    )
+
+    ekf_node = Node(
+        package='robot_localization',
+        executable='ekf_node',
+        name='ekf_filter_node',
+        output='screen',
+        parameters=[ekf_config_path, {'use_sim_time': True}]
+    )
+
     nav2_params_path = os.path.join(
             get_package_share_directory('bin_bringup'),
             'config',
@@ -218,8 +233,9 @@ def generate_launch_description():
                 on_exit=[load_joint_state_broadcaster, load_diff_drive_controller, load_bin_cover_controller],
             )
         ),
-        slam_toolbox,
+        ekf_node,
         rviz_node,
+        slam_toolbox,
         nav2,
         color_detector_node,
         behavior_manager_node,

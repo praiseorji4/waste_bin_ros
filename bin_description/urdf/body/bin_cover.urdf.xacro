@@ -14,10 +14,10 @@
         <link name="${prefix}bin_cover_link">
             <visual>
                 <geometry>
-                    <!-- <mesh filename="package://bin_description/meshes/Cover.stl" scale="1 1 1"/> -->
-                    <box size="${cover_length} ${cover_width} ${cover_height}"/>
+                    <mesh filename="package://bin_description/meshes/Cover.stl" scale="0.8 0.8 0.8"/>
+                    <!-- <box size="${cover_length} ${cover_width} ${cover_height}"/> -->
                 </geometry>
-                <origin xyz="0.0 0.0 0.0" rpy="0 0 0"/>
+                <origin xyz="${cover_length/2} 0.0 ${-bin_height}" rpy="0 0 0"/>
                 <material name="black">
                     <color rgba="0 0 0 1"/>
                 </material>
@@ -27,7 +27,7 @@
                     <!-- <mesh filename="package://bin_description/meshes/Cover.stl" scale="1 1 1"/> -->
                     <box size="${cover_length} ${cover_width} ${cover_height}"/>
                 </geometry>
-                <origin xyz="0 0 0" rpy="0 0 0"/>
+                <origin xyz="${cover_length/2} 0 0" rpy="0 0 0"/>
             </collision>
             <inertial>
                 <origin xyz="0 0 0" rpy="0 0 0"/>
@@ -41,10 +41,10 @@
         <joint name="${prefix}bin_cover_joint" type="revolute">
             <parent link="${prefix}bin_top_link"/>
             <child link="${prefix}bin_cover_link"/>
-            <origin xyz="0 0 ${bin_height}" rpy="0 0 0"/>
+            <origin xyz="${-cover_length/2} 0 ${bin_height}" rpy="0 0 0"/>
          
             <axis xyz="0 1 0"/>
-            <limit lower="${-pi/2}" upper="0" effort="10" velocity="1.0"/>
+            <limit lower="${-pi/2}" upper="0" effort="100" velocity="1.0"/>
         </joint>
     </xacro:macro>
 </robot>

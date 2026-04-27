@@ -22,6 +22,7 @@
 
     <xacro:include filename="$(find bin_description)/urdf/ros2_control/bin_ros2_control.xacro"/>
     <xacro:include filename="$(find bin_description)/urdf/gazebo/bin_gazebo.urdf.xacro"/>
+    <xacro:include filename="$(find bin_description)/urdf/sensors/bin_imu.urdf.xacro"/>
 
 
 
@@ -62,6 +63,9 @@
 
     <xacro:bin_camera
       prefix="$(arg prefix)" />
+
+    <xacro:bin_imu 
+    prefix="$(arg prefix)" />
 
     <!-- <xacro:bin_motors 
       prefix="$(arg prefix)"/> 
@@ -122,11 +126,7 @@
       x_reflect="1"
       y_reflect="-1"/>
 
-    <xacro:mecanum_wheel
-      prefix="$(arg prefix)"
-      side="back_left"
-      x_reflect="-1"
-      y_reflect="1"/>
+
 
     <xacro:mecanum_wheel
       prefix="$(arg prefix)"
