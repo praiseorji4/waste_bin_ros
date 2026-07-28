@@ -14,6 +14,17 @@
 
     <xacro:include filename="$(find bin_description)/urdf/body/bin_base.urdf.xacro"/>
     <xacro:include filename="$(find bin_description)/urdf/body/bin_wheels.urdf.xacro"/>
+    <xacro:include filename="$(find bin_description)/urdf/body/bin_top.urdf.xacro"/>
+    <xacro:include filename="$(find bin_description)/urdf/body/bin_cover.urdf.xacro"/>
+    <xacro:include filename="$(find bin_description)/urdf/sensors/bin_camera.urdf.xacro"/>
+    <xacro:include filename="$(find bin_description)/urdf/sensors/bin_lidar.urdf.xacro"/>
+
+
+    <xacro:include filename="$(find bin_description)/urdf/ros2_control/bin_ros2_control.xacro"/>
+    <xacro:include filename="$(find bin_description)/urdf/gazebo/bin_gazebo.urdf.xacro"/>
+    <xacro:include filename="$(find bin_description)/urdf/sensors/bin_imu.urdf.xacro"/>
+
+
 
     <!-- <xacro:include filename="$(find bin_description)/urdf/sensors/lidar.urdf.xacro"/>
     <xacro:include filename="$(find bin_description)/urdf/body/bin_wheel.urdf.xacro"/>
@@ -27,16 +38,39 @@
     <xacro:include filename="$(find bin_description)/urdf/sensors/imu.urdf.xacro"/> -->
 
 
-    <xacro:bin_base 
+    <xacro:bin_ros2_control prefix="$(arg prefix)" use_gazebo="$(arg use_gazebo)" />
+    <xacro:bin_gazebo prefix="$(arg prefix)" />
+
+
+
+    <xacro:bin_base
     prefix="$(arg prefix)"
-    z_off="${wheel_radius}"/>  <!--Wheel Radius-->
+    z_off="${wheel_radius}"/>  <!--wheel_radius + motor z-offset (0.01) to land wheels on ground-->
 
-
-    <xacro:bin_motors 
-      prefix="$(arg prefix)"/> 
 
     <xacro:bin_wheels
+      prefix="$(arg prefix)"/>
+
+    <xacro:bin_top
+      prefix="$(arg prefix)"
+      height="${base_height}" />
+
+    <xacro:bin_cover
       prefix="$(arg prefix)" />
+
+    <xacro:bin_lidar
+      prefix="$(arg prefix)" />
+
+    <xacro:bin_camera
+      prefix="$(arg prefix)" />
+
+    <xacro:bin_imu 
+    prefix="$(arg prefix)" />
+
+    <!-- <xacro:bin_motors 
+      prefix="$(arg prefix)"/> 
+
+ -->
     <!-- <xacro:back_bin_stud
       prefix="$(arg prefix)"
       side="back_left"
@@ -92,11 +126,7 @@
       x_reflect="1"
       y_reflect="-1"/>
 
-    <xacro:mecanum_wheel
-      prefix="$(arg prefix)"
-      side="back_left"
-      x_reflect="-1"
-      y_reflect="1"/>
+
 
     <xacro:mecanum_wheel
       prefix="$(arg prefix)"

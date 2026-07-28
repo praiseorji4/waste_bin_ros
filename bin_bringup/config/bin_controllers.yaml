@@ -1,0 +1,58 @@
+controller_manager:
+  ros__parameters:
+    update_rate: 50  # Hz
+    use_sim_time: True
+
+    diff_drive_controller:
+      type: diff_drive_controller/DiffDriveController
+
+    joint_state_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster
+
+    bin_cover_controller:
+      type: position_controllers/JointGroupPositionController
+
+    imu_sensor_broadcaster:
+      type: imu_sensor_broadcaster/IMUSensorBroadcaster
+
+diff_drive_controller:
+  ros__parameters:
+    # Match the joint names exactly as defined in your ubot_wheel.urdf.xacro
+    left_wheel_names: ["base_left_wheel_joint"]
+    right_wheel_names: ["base_right_wheel_joint"]
+
+    # Geometric parameters (based on your URDF properties)
+    wheel_separation: 0.2484  # base_width (0.227) + wheel_width (0.0214)
+    wheel_radius: 0.031755    # wheel_radius
+
+    # Odometry settings
+    publish_rate: 50.0
+    odom_frame_id: odom
+    base_frame_id: base_footprint
+    enable_odom_tf: false
+    pose_covariance_diagonal: [0.001, 0.001, 0.001, 0.001, 0.001, 0.03]
+    twist_covariance_diagonal: [0.001, 0.001, 0.001, 0.001, 0.001, 0.03]
+    open_loop: false
+
+    # Constraints for smooth movement
+    linear:
+      x:
+        has_velocity_limits: true
+        max_velocity: 1.0
+        min_velocity: -1.0
+    angular:
+      z:
+        has_velocity_limits: true
+        max_velocity: 2.0
+        min_velocity: -2.0
+
+bin_cover_controller:
+  ros__parameters:
+    joints: 
+      - bin_cover_joint
+
+imu_sensor_broadcaster:
+  ros__parameters:
+    frame_id: imu_link
+    sensor_name: imu_sensor
+    
