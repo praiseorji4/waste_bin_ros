@@ -1,13 +1,32 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
     <xacro:macro name="bin_ros2_control" params="prefix use_gazebo">
-        <ros2_control name="UbotSystem" type="system">
+        <ros2_control name="BinSystem" type="system">
             <hardware>
                 <xacro:if value="${use_gazebo}">
                     <plugin>gz_ros2_control/GazeboSimSystem</plugin>
                 </xacro:if>
                 <xacro:unless value="${use_gazebo}">
-                    <plugin>ubot_control/UbotHardwareInterface</plugin>
+                    <plugin>bin_hardware/DiffDriveBinHardware</plugin>
+                    <param name="left_wheel_name">${prefix}base_left_wheel_joint</param>
+                    <param name="right_wheel_name">${prefix}base_right_wheel_joint</param>
+                    <param name="loop_rate">20</param>
+                    <param name="device">/dev/ttyUSB0</param>
+                    <param name="baud_rate">57600</param>
+                    <param name="timeout_ms">2000</param>
+                    <param name="enc_counts_per_rev">2475</param>
+                    <param name="pid_p_left">10</param>
+                    <param name="pid_d_left">0</param>
+                    <param name="pid_i_left">0</param>
+                    <param name="pid_o_left">50</param>
+                    <param name="pid_p_right">10</param>
+                    <param name="pid_d_right">0</param>
+                    <param name="pid_i_right">0</param>
+                    <param name="pid_o_right">50</param>
+                    <param name="diag_publish_rate">3</param>
+                    <param name="cover_joint_name">${prefix}bin_cover_joint</param>
+                    <param name="cover_closed_rad">0.0</param>
+                    <param name="cover_open_rad">${-pi/2}</param>
                 </xacro:unless>
             </hardware>
 

@@ -95,9 +95,9 @@
         </gazebo>
 
         <!-- IMU system plugin (required for IMU sensor to publish data) -->
-        <!-- <gazebo>
+        <gazebo>
             <plugin filename="gz-sim-imu-system" name="gz::sim::systems::Imu"/>
-        </gazebo> -->
+        </gazebo>
 
         <!-- IMU SENSOR (MPU 9250 simulation) -->
         <gazebo reference="${prefix}imu_link">
