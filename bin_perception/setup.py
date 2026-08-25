@@ -19,6 +19,7 @@ setup(
     entry_points={
         'console_scripts': [
             'yolo_detector = bin_perception.yolo_detector:main',
+            'scan_gate     = bin_perception.scan_gate:main',
         ],
     },
 )

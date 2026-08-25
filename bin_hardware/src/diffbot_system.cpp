@@ -246,7 +246,16 @@ hardware_interface::return_type DiffDriveBinHardware::read(
 {
     if (!comms_.connected()) return hardware_interface::return_type::ERROR;
 
-    comms_.read_encoder_values(wheel_l_.enc, wheel_r_.enc);
+    if (!comms_.read_encoder_values(wheel_l_.enc, wheel_r_.enc))
+    {
+        // Dropped/garbled frame. Hold the last known position: diff_drive_controller
+        // integrates position deltas, so anything else shows up as a teleport in odom.
+        RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 1000,
+            "encoder read failed; holding last position");
+        wheel_l_.vel = 0.0;
+        wheel_r_.vel = 0.0;
+        return hardware_interface::return_type::OK;
+    }
 
     RCLCPP_DEBUG(get_logger(),
         "ENC l=%d r=%d", wheel_l_.enc, wheel_r_.enc);

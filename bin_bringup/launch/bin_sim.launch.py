@@ -179,6 +179,12 @@ def generate_launch_description():
         'config', 'ekf.yaml'
     )
 
+    # Disabled: bin_controllers.yaml now sets enable_odom_tf: true, so diff_drive_controller
+    # owns odom->base_footprint. Running the EKF as well gives two publishers of that same
+    # transform and the model ghosts between them. bin_real does not run an EKF either, and
+    # the real robot has no IMU wired up yet (the <sensor> block in bin_ros2_control.xacro is
+    # commented out and imu_sensor_broadcaster is never spawned), so fusing here would only
+    # make sim diverge from hardware. To re-enable: set enable_odom_tf: false first.
     ekf_node = Node(
         package='robot_localization',
         executable='ekf_node',
@@ -231,7 +237,7 @@ def generate_launch_description():
                 on_exit=[load_joint_state_broadcaster, load_diff_drive_controller, load_bin_cover_controller],
             )
         ),
-        ekf_node,
+        # ekf_node,  # see note at its definition — would duplicate odom->base_footprint
         rviz_node,
         slam_toolbox,
         nav2,

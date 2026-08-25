@@ -17,7 +17,7 @@
 
 
 <xacro:macro name="bin_base" params="prefix z_off">
-    <link name="base_footprint"/>
+    <link name="${prefix}base_footprint"/>
     <link name="${prefix}base_link">
         <visual>
             <geometry>

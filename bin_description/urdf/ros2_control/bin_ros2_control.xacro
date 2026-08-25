@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
-    <xacro:macro name="bin_ros2_control" params="prefix use_gazebo">
+    <xacro:macro name="bin_ros2_control" params="prefix use_gazebo device:=/dev/ttyUSB0">
         <ros2_control name="BinSystem" type="system">
             <hardware>
                 <xacro:if value="${use_gazebo}">
@@ -13,7 +13,9 @@
                     <param name="loop_rate">20</param>
                     <param name="device">/dev/ttyUSB0</param>
                     <param name="baud_rate">57600</param>
-                    <param name="timeout_ms">2000</param>
+                    <!-- Must stay well under the controller_manager cycle budget: this
+                         read blocks the realtime update thread. -->
+                    <param name="timeout_ms">50</param>
                     <param name="enc_counts_per_rev">2475</param>
                     <param name="pid_p_left">10</param>
                     <param name="pid_d_left">0</param>

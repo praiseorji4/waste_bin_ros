@@ -12,6 +12,11 @@
   <depend>geometry_msgs</depend>
   <depend>nav2_msgs</depend>
   <depend>action_msgs</depend>
+  <depend>nav2_simple_commander</depend>
+  <depend>tf2_ros</depend>
+  <depend>std_srvs</depend>
+  <depend>ament_index_python</depend>
+  <depend>python3-yaml</depend>
   <depend>cv_bridge</depend>
   <depend>python3-opencv</depend>
   <depend>python3-numpy</depend>

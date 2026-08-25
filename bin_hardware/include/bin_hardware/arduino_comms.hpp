@@ -89,7 +89,10 @@ public:
 
     // Reads 2 encoder values: left, right
     // Arduino sends: "left right\n"
-    void read_encoder_values(int &left, int &right)
+    // Returns false if the reply timed out or was truncated; left/right are then left
+    // untouched. Never write a partial parse through — the encoders are absolute, so a
+    // fabricated zero reads as the wheels teleporting back to their startup position.
+    bool read_encoder_values(int &left, int &right)
     {
         std::string response = send_msg("e\r");
 
@@ -97,19 +100,15 @@ public:
         response.erase(std::remove(response.begin(), response.end(), '\n'), response.end());
 
         std::istringstream ss(response);
-        int vals[2] = {0, 0};
-        for (int i = 0; i < 2; ++i)
+        int l = 0, r = 0;
+        if (!(ss >> l >> r))
         {
-            if (!(ss >> vals[i]))
-            {
-                std::cerr << "read_encoder_values: failed to parse token " << i
-                          << " from response: '" << response << "'" << std::endl;
-                break;
-            }
+            return false;
         }
 
-        left  = vals[0];
-        right = vals[1];
+        left  = l;
+        right = r;
+        return true;
     }
 
     // Sends 2 motor speed values: left, right

@@ -1,9 +1,71 @@
+# Localisation against a pre-recorded map. map_server's yaml_filename is left empty
+# on purpose: nav2_bringup/localization_launch.py overrides it from its `map:=` arg.
+map_server:
+  ros__parameters:
+    use_sim_time: False
+    yaml_filename: ""
+
+amcl:
+  ros__parameters:
+    use_sim_time: False
+    base_frame_id: "base_footprint"
+    odom_frame_id: "odom"
+    global_frame_id: "map"
+    scan_topic: /lidar               # scan_gate's output, not the raw driver feed
+    robot_model_type: "nav2_amcl::DifferentialMotionModel"
+
+    # LD19 is a ~12 m scanner; the stock 100.0 makes the likelihood field meaningless.
+    laser_max_range: 12.0
+    laser_min_range: -1.0
+    laser_model_type: "likelihood_field"
+    laser_likelihood_max_dist: 2.0
+    max_beams: 60
+
+    # Trimmed from the stock 2000/500 to keep the Pi's load down.
+    max_particles: 1200
+    min_particles: 400
+
+    alpha1: 0.2
+    alpha2: 0.2
+    alpha3: 0.2
+    alpha4: 0.2
+    alpha5: 0.2
+    beam_skip_distance: 0.5
+    beam_skip_error_threshold: 0.9
+    beam_skip_threshold: 0.3
+    do_beamskip: false
+    lambda_short: 0.1
+    pf_err: 0.05
+    pf_z: 0.99
+    recovery_alpha_fast: 0.0
+    recovery_alpha_slow: 0.0
+    resample_interval: 1
+    save_pose_rate: 0.5
+    sigma_hit: 0.2
+    tf_broadcast: true
+    transform_tolerance: 1.0
+    update_min_a: 0.2
+    update_min_d: 0.25
+    z_hit: 0.5
+    z_max: 0.05
+    z_rand: 0.5
+    z_short: 0.05
+
+    # Start localised at the origin. Drop set_initial_pose to seed with RViz's
+    # "2D Pose Estimate" tool instead.
+    set_initial_pose: true
+    initial_pose:
+      x: 0.0
+      y: 0.0
+      z: 0.0
+      yaw: 0.0
+
 bt_navigator:
   ros__parameters:
-    use_sim_time: True
+    use_sim_time: False
     global_frame: map
     robot_base_frame: base_footprint
-    odom_topic: /odometry/filtered
+    odom_topic: /diff_drive_controller/odom
     bt_loop_duration: 10
     filter_duration: 0.3
     default_server_timeout: 20
@@ -32,19 +94,19 @@ bt_navigator:
 
 bt_navigator_navigate_through_poses_rclcpp_node:
   ros__parameters:
-    use_sim_time: True
+    use_sim_time: False
 
 bt_navigator_navigate_to_pose_rclcpp_node:
   ros__parameters:
-    use_sim_time: True
+    use_sim_time: False
 
 controller_server:
   ros__parameters:
-    use_sim_time: True
+    use_sim_time: False
     controller_frequency: 20.0
     costmap_update_timeout: 0.30
     min_x_velocity_threshold: 0.001
-    odom_topic: /odometry/filtered
+    odom_topic: /diff_drive_controller/odom
     min_y_velocity_threshold: 0.5
     min_theta_velocity_threshold: 0.001
     failure_tolerance: 0.3
@@ -120,7 +182,7 @@ controller_server:
 local_costmap:
   local_costmap:
     ros__parameters:
-      use_sim_time: True
+      use_sim_time: False
       update_frequency: 5.0
       publish_frequency: 2.0
       global_frame: odom
@@ -161,7 +223,7 @@ local_costmap:
 global_costmap:
   global_costmap:
     ros__parameters:
-      use_sim_time: True
+      use_sim_time: False
       update_frequency: 1.0
       publish_frequency: 1.0
       global_frame: map
@@ -196,7 +258,7 @@ global_costmap:
 
 planner_server:
   ros__parameters:
-    use_sim_time: True
+    use_sim_time: False
     allow_partial_planning: false
     expected_planner_frequency: 20.0
     planner_plugins: ["GridBased"]
@@ -210,7 +272,7 @@ planner_server:
 
 smoother_server:
   ros__parameters:
-    use_sim_time: True
+    use_sim_time: False
     smoother_plugins: ["simple_smoother"]
     simple_smoother:
       plugin: "nav2_smoother::SimpleSmoother"
@@ -222,7 +284,7 @@ smoother_server:
 
 behavior_server:
   ros__parameters:
-    use_sim_time: True
+    use_sim_time: False
     local_costmap_topic: local_costmap/costmap_raw
     global_costmap_topic: global_costmap/costmap_raw
     local_footprint_topic: local_costmap/published_footprint
@@ -256,11 +318,11 @@ behavior_server:
 
 robot_state_publisher:
   ros__parameters:
-    use_sim_time: True
+    use_sim_time: False
 
 waypoint_follower:
   ros__parameters:
-    use_sim_time: True
+    use_sim_time: False
     loop_rate: 20
     stop_on_failure: false
     introspection_mode: "disabled"
@@ -272,7 +334,7 @@ waypoint_follower:
 
 velocity_smoother:
   ros__parameters:
-    use_sim_time: True
+    use_sim_time: False
     smoothing_frequency: 20.0
     scale_velocities: False
     feedback: "OPEN_LOOP"
@@ -280,14 +342,14 @@ velocity_smoother:
     min_velocity: [-0.5, 0.0, -1.0]
     max_accel: [2.5, 0.0, 3.2]
     max_decel: [-2.5, 0.0, -3.2]
-    odom_topic: "/odometry/filtered"
+    odom_topic: "/diff_drive_controller/odom"
     odom_duration: 0.1
     deadband_velocity: [0.0, 0.0, 0.0]
     velocity_timeout: 1.0
 
 collision_monitor:
   ros__parameters:
-    use_sim_time: True
+    use_sim_time: False
     enabled: True
     base_frame_id: "base_footprint"
     odom_frame_id: "odom"
@@ -318,7 +380,7 @@ collision_monitor:
 
 map_saver:
   ros__parameters:
-    use_sim_time: True
+    use_sim_time: False
     save_map_timeout: 5.0
     free_thresh_default: 0.25
     occupied_thresh_default: 0.65
@@ -327,7 +389,7 @@ map_saver:
 
 docking_server:
   ros__parameters:
-    use_sim_time: True
+    use_sim_time: False
     controller_frequency: 50.0
     initial_perception_timeout: 5.0
     wait_charge_timeout: 5.0

@@ -16,6 +16,8 @@ setup(
         'console_scripts': [
             'color_detector   = bin_behavior.color_detector:main',
             'behavior_manager = bin_behavior.behavior_manager:main',
+            'waypoint_runner  = bin_behavior.waypoint_runner:main',
+            'waypoint_capture = bin_behavior.waypoint_capture:main',
         ],
     },
 )

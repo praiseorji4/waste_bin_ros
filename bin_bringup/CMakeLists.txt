@@ -9,7 +9,7 @@ endif()
 find_package(ament_cmake REQUIRED)
 
 INSTALL (
-  DIRECTORY config launch worlds
+  DIRECTORY config launch worlds maps udev
   DESTINATION share/${PROJECT_NAME}
 )
 

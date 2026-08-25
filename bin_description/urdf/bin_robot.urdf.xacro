@@ -7,6 +7,7 @@
     <xacro:arg name="robot_name" default="bin_robot"/>
     <xacro:arg name="prefix" default=""/>
     <xacro:arg name="use_gazebo" default="true"/>
+    <xacro:arg name="motor_port" default="/dev/ttyUSB0"/>
 
 
 
@@ -38,7 +39,7 @@
     <xacro:include filename="$(find bin_description)/urdf/sensors/imu.urdf.xacro"/> -->
 
 
-    <xacro:bin_ros2_control prefix="$(arg prefix)" use_gazebo="$(arg use_gazebo)" />
+    <xacro:bin_ros2_control prefix="$(arg prefix)" use_gazebo="$(arg use_gazebo)" device="$(arg motor_port)" />
     <xacro:bin_gazebo prefix="$(arg prefix)" />
 
 
