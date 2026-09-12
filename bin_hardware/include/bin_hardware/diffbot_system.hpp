@@ -46,6 +46,14 @@ class DiffDriveBinHardware : public hardware_interface::SystemInterface
         std::string cover_joint_name = "bin_cover_joint";
         double cover_closed_rad = 0.0;
         double cover_open_rad   = -M_PI / 2.0;
+        // Time the servo takes to sweep the full span. Used to ramp the reported
+        // position instead of teleporting it, and to hold the lid closed long enough
+        // at shutdown for the sweep to finish.
+        double cover_travel_s   = 0.35;
+        // Send-on-change thresholds as a fraction of travel. The gap between them is
+        // hysteresis: a command sitting near the midpoint cannot chatter the servo.
+        double cover_open_frac  = 0.6;
+        double cover_close_frac = 0.4;
     };
 
 public:
@@ -79,6 +87,8 @@ private:
     Wheel wheel_r_;
 
     double cover_cmd_ = std::numeric_limits<double>::quiet_NaN();
+    // Where the lid is believed to be right now, ramped towards cover_cmd_ in read().
+    // There is no lid encoder, so this is a model, not a measurement.
     double cover_pos_ = 0.0;
     double cover_vel_ = 0.0;
     int last_lid_state_ = -1;  // -1 = unsent, 0 = closed, 1 = open

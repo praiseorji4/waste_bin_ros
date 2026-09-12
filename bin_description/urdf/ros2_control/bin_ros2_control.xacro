@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
-    <xacro:macro name="bin_ros2_control" params="prefix use_gazebo">
+    <xacro:macro name="bin_ros2_control" params="prefix use_gazebo device:=/dev/ttyUSB0">
         <ros2_control name="BinSystem" type="system">
             <hardware>
                 <xacro:if value="${use_gazebo}">
@@ -13,7 +13,12 @@
                     <param name="loop_rate">20</param>
                     <param name="device">/dev/ttyUSB0</param>
                     <param name="baud_rate">57600</param>
-                    <param name="timeout_ms">2000</param>
+                    <!-- Must stay well under the controller_manager cycle budget: this
+                         read blocks the realtime update thread. Each cycle makes TWO
+                         blocking round trips ('e' in read, 'm' in write) plus a third
+                         when the lid changes, so at 20 Hz (50 ms budget) a 50 ms
+                         timeout could overrun the cycle 3x on a bad frame. -->
+                    <param name="timeout_ms">20</param>
                     <param name="enc_counts_per_rev">2475</param>
                     <param name="pid_p_left">10</param>
                     <param name="pid_d_left">0</param>
@@ -27,6 +32,13 @@
                     <param name="cover_joint_name">${prefix}bin_cover_joint</param>
                     <param name="cover_closed_rad">0.0</param>
                     <param name="cover_open_rad">${-pi/2}</param>
+                    <!-- Servo sweep time for the full span. Used to ramp the reported
+                         lid angle (there is no lid encoder) and to wait out the close
+                         on shutdown. Measure it once and set it here. -->
+                    <param name="cover_travel_s">0.35</param>
+                    <!-- Hysteresis band for the binary servo command. -->
+                    <param name="cover_open_frac">0.6</param>
+                    <param name="cover_close_frac">0.4</param>
                 </xacro:unless>
             </hardware>
 

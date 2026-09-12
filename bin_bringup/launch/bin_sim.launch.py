@@ -1,10 +1,12 @@
 import os
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import IncludeLaunchDescription, RegisterEventHandler, SetEnvironmentVariable
+from launch.actions import (DeclareLaunchArgument, IncludeLaunchDescription,
+                            RegisterEventHandler, SetEnvironmentVariable)
+from launch.conditions import IfCondition
 from launch.event_handlers import OnProcessExit
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch.substitutions import Command
+from launch.substitutions import Command, LaunchConfiguration, PythonExpression
 from launch_ros.actions import Node
 from launch_ros.parameter_descriptions import ParameterValue
 
@@ -68,6 +70,9 @@ def generate_launch_description():
             '/imu@sensor_msgs/msg/Imu[gz.msgs.IMU'
         ],
         remappings=[
+            # The lidar rides on the lid in sim too, so route the raw feed through
+            # scan_gate: bridge publishes /lidar_raw, scan_gate republishes /lidar.
+            ('/lidar', '/lidar_raw'),
             ('/camera/image', '/camera/rgb/image_raw'),
             ('/camera/depth_image', '/camera/depth/image_raw'),
             ('/camera/camera_info', '/camera/rgb/camera_info'),
@@ -179,6 +184,12 @@ def generate_launch_description():
         'config', 'ekf.yaml'
     )
 
+    # Disabled: bin_controllers.yaml now sets enable_odom_tf: true, so diff_drive_controller
+    # owns odom->base_footprint. Running the EKF as well gives two publishers of that same
+    # transform and the model ghosts between them. bin_real does not run an EKF either, and
+    # the real robot has no IMU wired up yet (the <sensor> block in bin_ros2_control.xacro is
+    # commented out and imu_sensor_broadcaster is never spawned), so fusing here would only
+    # make sim diverge from hardware. To re-enable: set enable_odom_tf: false first.
     ekf_node = Node(
         package='robot_localization',
         executable='ekf_node',
@@ -202,12 +213,58 @@ def generate_launch_description():
 
     )
 
+    # Which trigger source opens the lid:
+    #   peace : MediaPipe peace-sign gesture (bin_perception/peace_detector)
+    #   color : original blue/green blob detector (bin_behavior/color_detector)
+    #   none  : no automatic trigger; publish /bin_trigger by hand
+    declare_detector = DeclareLaunchArgument(
+        'detector', default_value='peace', choices=['peace', 'color', 'none'],
+        description='Trigger source for opening the bin lid')
+    detector = LaunchConfiguration('detector')
+
+    def when(value):
+        return IfCondition(PythonExpression(["'", detector, "' == '", value, "'"]))
+
     color_detector_node = Node(
         package='bin_behavior',
         executable='color_detector',
         name='color_detector',
         output='screen',
+        condition=when('color'),
         parameters=[{'use_sim_time': True}]
+    )
+
+    # Blocks laser scans while the lid is open: the lidar is bolted to the lid, so an
+    # open lid sweeps floor and ceiling and corrupts the SLAM map and both costmaps.
+    scan_gate_node = Node(
+        package='bin_perception',
+        executable='scan_gate',
+        name='scan_gate',
+        output='screen',
+        parameters=[{
+            'use_sim_time': True,
+            'input_topic': '/lidar_raw',
+            'output_topic': '/lidar',
+            'joint_name': 'bin_cover_joint',
+            'closed_tolerance': 0.05,
+            'settle_time': 0.5,
+        }]
+    )
+
+    peace_detector_node = Node(
+        package='bin_perception',
+        executable='peace_detector',
+        name='peace_detector',
+        output='screen',
+        condition=when('peace'),
+        parameters=[{
+            'use_sim_time': True,
+            'input_topic': '/camera/rgb/image_raw',
+            'use_compressed': False,
+            'consecutive_frames': 4,
+            'cooldown_s': 5.0,
+            'process_every_n': 2,
+        }]
     )
 
     behavior_manager_node = Node(
@@ -215,10 +272,18 @@ def generate_launch_description():
         executable='behavior_manager',
         name='behavior_manager',
         output='screen',
-        parameters=[{'use_sim_time': True}]
+        parameters=[{
+            'use_sim_time': True,
+            # Nav2 runs in this launch file, so docking after the lid closes works here.
+            # On the real robot Nav2 lives on the laptop, so bin_real leaves it off.
+            'dock_after_close': True,
+            'dwell_s': 3.0,
+            'move_timeout_s': 6.0,
+        }]
     )
 
     return LaunchDescription([
+        declare_detector,
         SetEnvironmentVariable('GZ_SIM_RESOURCE_PATH', gz_resource_path),
         node_robot_state_publisher,
         gazebo,
@@ -231,10 +296,12 @@ def generate_launch_description():
                 on_exit=[load_joint_state_broadcaster, load_diff_drive_controller, load_bin_cover_controller],
             )
         ),
-        ekf_node,
+        # ekf_node,  # see note at its definition — would duplicate odom->base_footprint
         rviz_node,
         slam_toolbox,
         nav2,
+        scan_gate_node,
         color_detector_node,
+        peace_detector_node,
         behavior_manager_node,
     ])

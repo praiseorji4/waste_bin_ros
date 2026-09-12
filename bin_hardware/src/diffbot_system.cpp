@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <chrono>
+#include <thread>
 #include <cmath>
 #include <limits>
 #include <memory>
@@ -58,6 +59,12 @@ hardware_interface::CallbackReturn DiffDriveBinHardware::on_init(
         cfg_.cover_closed_rad = hardware_interface::stod(info_.hardware_parameters["cover_closed_rad"]);
     if (info_.hardware_parameters.count("cover_open_rad") > 0)
         cfg_.cover_open_rad = hardware_interface::stod(info_.hardware_parameters["cover_open_rad"]);
+    if (info_.hardware_parameters.count("cover_travel_s") > 0)
+        cfg_.cover_travel_s = hardware_interface::stod(info_.hardware_parameters["cover_travel_s"]);
+    if (info_.hardware_parameters.count("cover_open_frac") > 0)
+        cfg_.cover_open_frac = hardware_interface::stod(info_.hardware_parameters["cover_open_frac"]);
+    if (info_.hardware_parameters.count("cover_close_frac") > 0)
+        cfg_.cover_close_frac = hardware_interface::stod(info_.hardware_parameters["cover_close_frac"]);
 
     wheel_l_.setup(cfg_.left_wheel_name,  cfg_.enc_counts_per_rev);
     wheel_r_.setup(cfg_.right_wheel_name, cfg_.enc_counts_per_rev);
@@ -236,6 +243,17 @@ hardware_interface::CallbackReturn DiffDriveBinHardware::on_deactivate(
     if (comms_.connected())
     {
         comms_.set_motor_values(0, 0);
+
+        // Close the lid on the way out. Without this, stopping the stack with the lid
+        // open leaves it open: the servo holds its last commanded angle, and the LD19
+        // bolted to the lid stays pitched. Wait out the sweep so the close actually
+        // completes before the serial port is dropped.
+        comms_.set_lid(false);
+        last_lid_state_ = 0;
+        cover_pos_ = cfg_.cover_closed_rad;
+        std::this_thread::sleep_for(
+            std::chrono::milliseconds(static_cast<int>(cfg_.cover_travel_s * 1000.0)));
+        RCLCPP_INFO(get_logger(), "Lid commanded closed on shutdown.");
     }
     RCLCPP_INFO(get_logger(), "Successfully deactivated!");
     return hardware_interface::CallbackReturn::SUCCESS;
@@ -246,7 +264,16 @@ hardware_interface::return_type DiffDriveBinHardware::read(
 {
     if (!comms_.connected()) return hardware_interface::return_type::ERROR;
 
-    comms_.read_encoder_values(wheel_l_.enc, wheel_r_.enc);
+    if (!comms_.read_encoder_values(wheel_l_.enc, wheel_r_.enc))
+    {
+        // Dropped/garbled frame. Hold the last known position: diff_drive_controller
+        // integrates position deltas, so anything else shows up as a teleport in odom.
+        RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 1000,
+            "encoder read failed; holding last position");
+        wheel_l_.vel = 0.0;
+        wheel_r_.vel = 0.0;
+        return hardware_interface::return_type::OK;
+    }
 
     RCLCPP_DEBUG(get_logger(),
         "ENC l=%d r=%d", wheel_l_.enc, wheel_r_.enc);
@@ -292,12 +319,33 @@ hardware_interface::return_type DiffDriveBinHardware::read(
     update_wheel(wheel_l_);
     update_wheel(wheel_r_);
 
-    // No lid encoder — open-loop echo of the last commanded position.
+    // No lid encoder, so the reported position is modelled rather than measured.
+    // Ramp towards the commanded angle at the servo's real sweep rate instead of
+    // teleporting: /joint_states then stays honest while the lid is still moving,
+    // which is what scan_gate and behavior_manager wait on.
     if (std::isfinite(cover_cmd_))
     {
-        cover_pos_ = cover_cmd_;
+        const double span = std::abs(cfg_.cover_open_rad - cfg_.cover_closed_rad);
+        const double rate = (cfg_.cover_travel_s > 1e-6) ? span / cfg_.cover_travel_s : 1e9;
+        const double step = rate * delta_seconds;
+        const double error = cover_cmd_ - cover_pos_;
+
+        if (std::abs(error) <= step)
+        {
+            cover_pos_ = cover_cmd_;
+            cover_vel_ = 0.0;
+        }
+        else
+        {
+            const double dir = (error > 0.0) ? 1.0 : -1.0;
+            cover_pos_ += dir * step;
+            cover_vel_ = dir * rate;
+        }
     }
-    cover_vel_ = 0.0;
+    else
+    {
+        cover_vel_ = 0.0;
+    }
 
     return hardware_interface::return_type::OK;
 }
@@ -323,11 +371,18 @@ hardware_interface::return_type DiffDriveBinHardware::write(
     {
         double span = cfg_.cover_open_rad - cfg_.cover_closed_rad;
         double frac = std::clamp((cover_cmd_ - cfg_.cover_closed_rad) / span, 0.0, 1.0);
-        int open = (frac >= 0.5) ? 1 : 0;
-        if (open != last_lid_state_)
+
+        // Hysteresis: only cross into 'open' above cover_open_frac and back to
+        // 'closed' below cover_close_frac. Between the two the state is held, so a
+        // command parked near the midpoint cannot flip the servo every cycle.
+        int desired = last_lid_state_;
+        if (frac >= cfg_.cover_open_frac)       desired = 1;
+        else if (frac <= cfg_.cover_close_frac) desired = 0;
+
+        if (desired != last_lid_state_ && desired >= 0)
         {
-            comms_.set_lid(open == 1);
-            last_lid_state_ = open;
+            comms_.set_lid(desired == 1);
+            last_lid_state_ = desired;
         }
     }
 

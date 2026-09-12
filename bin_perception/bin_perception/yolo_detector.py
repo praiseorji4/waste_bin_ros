@@ -12,7 +12,9 @@ class YoloDetectorNode(Node):
 
         self.declare_parameter('model_path', 'yolov8n.pt')
         self.declare_parameter('confidence', 0.5)
-        self.declare_parameter('input_topic', '/image_raw/compressed')
+        # camera_ros on the robot and the gz bridge in sim both land here. The old
+        # default (/image_raw/compressed) was a v4l2_camera-ism and matched neither.
+        self.declare_parameter('input_topic', '/camera/rgb/image_raw/compressed')
         self.declare_parameter('output_topic', '/yolo/image_raw/compressed')
 
         model_path = self.get_parameter('model_path').value
