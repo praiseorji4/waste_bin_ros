@@ -2,7 +2,7 @@ from launch import LaunchDescription
 from ament_index_python import get_package_share_directory
 from launch.actions import DeclareLaunchArgument
 from launch.conditions import IfCondition
-from launch.substitutions import Command, LaunchConfiguration
+from launch.substitutions import Command, LaunchConfiguration, PythonExpression
 from launch_ros.actions import Node
 from launch_ros.parameter_descriptions import ParameterValue
 import os
@@ -165,6 +165,9 @@ def generate_launch_description():
             'product_name':           'LDLiDAR_LD19',
             # Raw feed — scan_gate republishes this as /lidar only while the lid is
             # closed, because the LD19 is mounted on the lid and pitches with it.
+            # MUST be 'lidar_raw', not 'lidar': scan_gate reads /lidar_raw and writes
+            # /lidar. Publishing the driver straight onto /lidar bypasses the gate and
+            # makes both nodes publish the same topic.
             'topic_name':             'lidar_raw',
             'frame_id':               'lidar_link',
             'port_name':              '/dev/ttyUSB1',
@@ -176,7 +179,40 @@ def generate_launch_description():
             'angle_crop_max':         0.0
         }] ) 
 
+    # Peace-sign trigger -> behavior_manager opens the lid. Needs the camera, so it is
+    # skipped when use_camera:=false. detector:=none disables it.
+    #   process_every_n=3 keeps the Pi at a sane CPU load; the gesture is held anyway.
+    peace_detector = Node(
+        package='bin_perception',
+        executable='peace_detector',
+        name='peace_detector',
+        output='screen',
+        condition=IfCondition(PythonExpression(
+            ["'", LaunchConfiguration('detector'), "' == 'peace' and '",
+             LaunchConfiguration('use_camera'), "' == 'true'"])),
+        parameters=[{
+            'input_topic': '/camera/rgb/image_raw',
+            'use_compressed': False,
+            'consecutive_frames': 4,
+            'cooldown_s': 5.0,
+            'process_every_n': 3,
+        }]
+    )
+
+    # Runs the lid sequence: open -> wait -> close -> (dock, if Nav2 is up).
+    behavior_manager = Node(
+        package='bin_behavior',
+        executable='behavior_manager',
+        name='behavior_manager',
+        output='screen',
+        condition=IfCondition(PythonExpression(
+            ["'", LaunchConfiguration('detector'), "' != 'none'"])),
+    )
+
     return LaunchDescription([
+        DeclareLaunchArgument(
+            'detector', default_value='peace', choices=['peace', 'none'],
+            description='Trigger source for opening the bin lid'),
         declare_motor_port,
         declare_lidar_port,
         declare_use_camera,
@@ -187,7 +223,9 @@ def generate_launch_description():
         bin_cover_controller_spawner,
         twist_stamper,
         ldlidar_node,
-        # scan_gate,
+        scan_gate,
         camera_node,
+        peace_detector,
+        behavior_manager,
         # rviz_node
     ])

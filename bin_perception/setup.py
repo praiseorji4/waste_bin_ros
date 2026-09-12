@@ -18,8 +18,9 @@ setup(
     license='Apache-2.0',
     entry_points={
         'console_scripts': [
-            'yolo_detector = bin_perception.yolo_detector:main',
-            'scan_gate     = bin_perception.scan_gate:main',
+            'yolo_detector  = bin_perception.yolo_detector:main',
+            'scan_gate      = bin_perception.scan_gate:main',
+            'peace_detector = bin_perception.peace_detector:main',
         ],
     },
 )
